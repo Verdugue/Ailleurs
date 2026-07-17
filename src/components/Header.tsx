@@ -14,7 +14,6 @@ export function Header() {
         <NavLink to="/" className={navClass} end>Destinations</NavLink>
         <NavLink to="/experiences" className={navClass}>Expériences</NavLink>
         <NavLink to="/evenements" className={navClass}>Événements</NavLink>
-        <button type="button" className="nav-cta">Se connecter</button>
       </nav>
     </header>
   )

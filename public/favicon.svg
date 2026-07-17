@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Reprend le blob organique vert du logo « Ailleurs » (.brand-mark) -->
+  <defs>
+    <radialGradient id="g" cx="34%" cy="30%" r="80%">
+      <stop offset="0" stop-color="#adbb92"/>
+      <stop offset=".58" stop-color="#7d8b6a"/>
+      <stop offset="1" stop-color="#5f6e4e"/>
+    </radialGradient>
+  </defs>
+  <path fill="url(#g)" d="M33 4c14 1 26 10 27 25 1 16-9 30-26 31C18 61 4 51 4 34 4 17 17 3 33 4Z"/>
+</svg>
