@@ -88,8 +88,8 @@ export function EventExplorer({ city }: { city: City }) {
       {events.status === 'ready' && events.data.length === 0 && (
         <p className="empty-note">
           Ticketmaster, notre source mondiale, n'opère pas (ou très peu)
-          {city.country ? ` en ${city.country}` : ' dans ce pays'} — aucun événement n'y est donc
-          référencé.
+          {city.country ? ` en ${city.country}` : ' dans ce pays'} — aucun événement datable ou
+          réservable n'y est donc référencé.
           {(() => {
             const local = localTicketingFor(city.country)
             return local ? (

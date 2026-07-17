@@ -1,4 +1,5 @@
-import type { City, LodgingType, PlaceCategory } from '../types'
+import type { City, LodgingType, Place, PlaceCategory } from '../types'
+import { slugify } from '../utils/slug'
 import { unsplash } from './images'
 import { paris } from './cities/paris'
 import { rome } from './cities/rome'
@@ -55,4 +56,20 @@ export const CITIES: City[] = [
 
 export function getCity(cityId: string | undefined): City | undefined {
   return CITIES.find((c) => c.id === cityId)
+}
+
+/** Identifiant d'URL d'un lieu (unique au sein d'une ville). */
+export function placeSlug(place: Place): string {
+  return slugify(place.name)
+}
+
+/** Résout la paire ville + lieu à partir de leurs identifiants d'URL. */
+export function getPlace(
+  cityId: string | undefined,
+  slug: string | undefined,
+): { city: City; place: Place } | undefined {
+  const city = getCity(cityId)
+  if (!city || !slug) return undefined
+  const place = city.places.find((p) => placeSlug(p) === slug)
+  return place ? { city, place } : undefined
 }

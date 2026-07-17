@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
-import { CATEGORY_META, getCity } from '../data/destinations'
+import { CATEGORY_META, getCity, placeSlug } from '../data/destinations'
 import { fetchWeather } from '../services/weather'
 import { useAsync } from '../hooks/useAsync'
 import { CategoryFilter, type CategoryFilterValue } from '../components/CategoryFilter'
@@ -50,7 +50,11 @@ export function CityPage() {
         <h2>À faire à {city.name}</h2>
         <div className="place-grid">
           {places.map((p) => (
-            <article key={p.name} className="place-card">
+            <Link
+              key={p.name}
+              to={`/ville/${city.id}/${placeSlug(p)}`}
+              className="place-card place-card--link"
+            >
               <div className="place-img" style={{ background: CATEGORY_META[p.cat].gradient }}>
                 <CoverImage src={p.image} alt={p.name} />
                 <span className="place-badge">{CATEGORY_META[p.cat].label}</span>
@@ -58,8 +62,9 @@ export function CityPage() {
               <div className="place-body">
                 <h3>{p.name}</h3>
                 <p>{p.blurb}</p>
+                <span className="place-city">Carte, tables & avis →</span>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </section>

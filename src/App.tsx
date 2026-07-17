@@ -4,6 +4,7 @@ import { Footer } from './components/Footer'
 import { ScrollToTop } from './components/ScrollToTop'
 import { HomePage } from './pages/HomePage'
 import { CityPage } from './pages/CityPage'
+import { PlacePage } from './pages/PlacePage'
 import { DiscoverPage } from './pages/DiscoverPage'
 import { EventPage } from './pages/EventPage'
 import { EventsPage } from './pages/EventsPage'
@@ -18,6 +19,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/ville/:cityId" element={<CityPage />} />
+          <Route path="/ville/:cityId/:placeSlug" element={<PlacePage />} />
           <Route path="/decouvrir" element={<DiscoverPage />} />
           <Route path="/evenement/:eventId" element={<EventPage />} />
           <Route path="/evenements" element={<EventsPage />} />

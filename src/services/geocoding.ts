@@ -1,3 +1,5 @@
+import type { Coords } from '../types'
+
 /**
  * Recherche de villes dans le monde entier via l'API de géocodage Open-Meteo.
  * Gratuit, sans clé API.
@@ -48,6 +50,86 @@ async function fetchGeo(name: string): Promise<GeoCity[]> {
       lon: r.longitude as number,
       population: r.population,
     }))
+}
+
+/** Position et adresse réelles d'un lieu précis (monument, quartier, marché…). */
+export interface GeoPlace {
+  lat: number
+  lon: number
+  /** Adresse complète telle que renvoyée par Nominatim */
+  address: string
+  osmType?: string
+  osmId?: number
+}
+
+const PLACE_CACHE_TTL_MS = 24 * 60 * 60 * 1000
+
+/**
+ * Géocode un lieu nommé (ex. « Fushimi Inari ») dans une ville donnée via
+ * Nominatim (OpenStreetMap). Gratuit, sans clé. On borne la recherche autour
+ * de la ville pour lever l'ambiguïté des noms génériques (« Gion », « Nishiki »).
+ * Résultat mis en cache 24 h. Renvoie null si le lieu est introuvable.
+ */
+export async function geocodePlace(
+  name: string,
+  cityName: string,
+  cityCoords: Coords,
+): Promise<GeoPlace | null> {
+  const cacheKey = `ailleurs:geoplace:${cityName}:${name}`
+  try {
+    const raw = sessionStorage.getItem(cacheKey)
+    if (raw) {
+      const { at, data } = JSON.parse(raw) as { at: number; data: GeoPlace | null }
+      if (Date.now() - at < PLACE_CACHE_TTL_MS) return data
+    }
+  } catch {
+    // cache optionnel
+  }
+
+  // viewbox ~110 km autour de la ville : biais (sans bounded, pour ne pas
+  // exclure un lieu légèrement excentré) qui aide à choisir le bon « Gion ».
+  const d = 0.5
+  const viewbox = [cityCoords.lon - d, cityCoords.lat + d, cityCoords.lon + d, cityCoords.lat - d].join(',')
+  const params = new URLSearchParams({
+    q: `${name}, ${cityName}`,
+    format: 'jsonv2',
+    limit: '1',
+    'accept-language': 'fr',
+    viewbox,
+  })
+
+  let result: GeoPlace | null = null
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`)
+    if (res.ok) {
+      const hits = (await res.json()) as {
+        lat?: string
+        lon?: string
+        display_name?: string
+        osm_type?: string
+        osm_id?: number
+      }[]
+      const h = hits[0]
+      if (h?.lat && h?.lon) {
+        result = {
+          lat: Number(h.lat),
+          lon: Number(h.lon),
+          address: h.display_name ?? `${name}, ${cityName}`,
+          osmType: h.osm_type,
+          osmId: h.osm_id,
+        }
+      }
+    }
+  } catch {
+    result = null
+  }
+
+  try {
+    sessionStorage.setItem(cacheKey, JSON.stringify({ at: Date.now(), data: result }))
+  } catch {
+    // cache optionnel
+  }
+  return result
 }
 
 export async function searchCities(query: string): Promise<GeoCity[]> {

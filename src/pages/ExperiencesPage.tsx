@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CATEGORY_META, CITIES } from '../data/destinations'
+import { CATEGORY_META, CITIES, placeSlug } from '../data/destinations'
 import { CategoryFilter, type CategoryFilterValue } from '../components/CategoryFilter'
 import { CoverImage } from '../components/CoverImage'
 
@@ -32,7 +32,7 @@ export function ExperiencesPage() {
           {shown.map(({ city, place }) => (
             <Link
               key={`${city.id}-${place.name}`}
-              to={`/ville/${city.id}`}
+              to={`/ville/${city.id}/${placeSlug(place)}`}
               className="place-card place-card--link"
             >
               <div className="place-img" style={{ background: CATEGORY_META[place.cat].gradient }}>
