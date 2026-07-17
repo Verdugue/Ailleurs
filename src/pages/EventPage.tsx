@@ -2,10 +2,13 @@ import { Link, useParams } from 'react-router-dom'
 import { EVENT_GRADIENT, HOTEL_PHOTOS, LODGING_GRADIENT, LODGING_TAG } from '../data/destinations'
 import { fetchEventById, type RealEvent } from '../services/events'
 import {
+  estimateNightlyPrice,
   fetchNearbyLodging,
   formatDistance,
   osmUrl,
+  priceTier,
   type NearbyLodging,
+  type PriceTier,
 } from '../services/overpass'
 import { useAsync } from '../hooks/useAsync'
 import { CoverImage } from '../components/CoverImage'
@@ -16,43 +19,88 @@ import {
   PinIcon,
 } from '../components/icons'
 
+const LODGING_TIERS: { key: PriceTier; label: string; hint: string }[] = [
+  { key: 'budget', label: 'Petits budgets', hint: 'moins de 80 €' },
+  { key: 'confort', label: 'Confort', hint: '80 – 170 €' },
+  { key: 'premium', label: 'Premium', hint: 'plus de 170 €' },
+]
+
+function LodgingCard({
+  item: l,
+  index,
+  price,
+}: {
+  item: NearbyLodging
+  index: number
+  price: number
+}) {
+  return (
+    <article className="lodging-card">
+      <div className="lodging-img" style={{ background: LODGING_GRADIENT }}>
+        <CoverImage src={HOTEL_PHOTOS[index % HOTEL_PHOTOS.length]} />
+      </div>
+      <div className="lodging-body">
+        <span
+          className="lodging-tag"
+          style={{ background: LODGING_TAG[l.type].bg, color: LODGING_TAG[l.type].color }}
+        >
+          {l.type}
+        </span>
+        <h3>{l.name}</h3>
+        <div className="lodging-rating">
+          <PinIcon size={13} />
+          <span>{formatDistance(l.distanceM)} de l'événement</span>
+          {l.stars && <span>· {l.stars} étoile{l.stars === '1' ? '' : 's'}</span>}
+        </div>
+        {l.address && <div className="lodging-address">{l.address}</div>}
+        <div className="lodging-price">
+          <strong>{price} €</strong>
+          <span>/ nuit · estim.</span>
+        </div>
+        <a className="lodging-link" href={l.website ?? osmUrl(l)} target="_blank" rel="noreferrer">
+          {l.website ? 'Site web ↗' : 'Voir sur OpenStreetMap ↗'}
+        </a>
+      </div>
+    </article>
+  )
+}
+
 function NearbyLodgingGrid({ items }: { items: NearbyLodging[] }) {
+  // on garde l'index d'origine (photo stable) et on trie par prix estimé
+  const priced = items
+    .map((l, index) => ({ l, index, price: estimateNightlyPrice(l) }))
+    .sort((a, b) => a.price - b.price)
+
+  const groups = LODGING_TIERS.map((tier) => ({
+    ...tier,
+    entries: priced.filter((p) => priceTier(p.price) === tier.key),
+  })).filter((g) => g.entries.length > 0)
+
   return (
     <>
-      <div className="lodging-grid">
-        {items.map((l, i) => (
-          <article key={`${l.osmType}-${l.osmId}`} className="lodging-card">
-            <div className="lodging-img" style={{ background: LODGING_GRADIENT }}>
-              <CoverImage src={HOTEL_PHOTOS[i % HOTEL_PHOTOS.length]} />
-            </div>
-            <div className="lodging-body">
-              <span
-                className="lodging-tag"
-                style={{ background: LODGING_TAG[l.type].bg, color: LODGING_TAG[l.type].color }}
-              >
-                {l.type}
-              </span>
-              <h3>{l.name}</h3>
-              <div className="lodging-rating">
-                <PinIcon size={13} />
-                <span>{formatDistance(l.distanceM)} de l'événement</span>
-                {l.stars && <span>· {l.stars} étoile{l.stars === '1' ? '' : 's'}</span>}
-              </div>
-              {l.address && <div className="lodging-address">{l.address}</div>}
-              <a
-                className="lodging-link"
-                href={l.website ?? osmUrl(l)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {l.website ? 'Site web ↗' : 'Voir sur OpenStreetMap ↗'}
-              </a>
-            </div>
-          </article>
-        ))}
-      </div>
+      {groups.map((g) => (
+        <div key={g.key} className="lodging-tier">
+          <div className="lodging-tier-head">
+            <h3>{g.label}</h3>
+            <span className="lodging-tier-hint">
+              {g.hint} / nuit · {g.entries.length} adresse{g.entries.length > 1 ? 's' : ''}
+            </span>
+          </div>
+          <div className="lodging-grid">
+            {g.entries.map((p) => (
+              <LodgingCard
+                key={`${p.l.osmType}-${p.l.osmId}`}
+                item={p.l}
+                index={p.index}
+                price={p.price}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
       <p className="lodging-note">
-        Hébergements réels · données © contributeurs OpenStreetMap · photos d'illustration
+        Hébergements réels · données © contributeurs OpenStreetMap · photos d'illustration ·
+        prix indicatifs estimés (non contractuels)
       </p>
     </>
   )
@@ -152,7 +200,7 @@ function EventBody({ event }: { event: RealEvent }) {
           <div className="booking-price">{event.priceText ?? 'Sur la billetterie'}</div>
           {event.url && (
             <a className="btn-primary" href={event.url} target="_blank" rel="noreferrer">
-              {event.source === 'Ticketmaster' ? 'Réserver sur Ticketmaster' : 'Voir sur Paris.fr'}
+              {event.source === 'Ticketmaster' ? 'Réserver sur Ticketmaster' : 'Voir'}
             </a>
           )}
           <div className="booking-info">
@@ -181,7 +229,7 @@ function EventBody({ event }: { event: RealEvent }) {
           <h2>Où dormir à proximité</h2>
           <p className="lodging-sub">
             Hôtels, maisons d'hôtes, locations et auberges
-            {event.venue ? ` près de ${event.venue}` : ' à proximité'}.
+            {event.venue ? ` près de ${event.venue}` : ' à proximité'}, classés par tranche de prix.
           </p>
           {!venueCoords && (
             <p className="empty-note">

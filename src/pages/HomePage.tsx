@@ -2,12 +2,25 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import type { Region } from '../types'
 import { CITIES } from '../data/destinations'
-import { searchCities, type GeoCity } from '../services/geocoding'
+import { searchCities, stripAccents, type GeoCity } from '../services/geocoding'
 import { gradientFor } from '../utils/gradient'
 import { CoverImage } from '../components/CoverImage'
 import { SearchIcon } from '../components/icons'
 
 const REGIONS: Region[] = ['Europe', 'Amériques', 'Asie', 'Afrique']
+
+// Fond vidéo du hero : côte aérienne (Pexels, libre). 720p ≈ 6 Mo pour rester léger.
+// Le poster est la 1re image du même clip (compressée) → transition invisible.
+const HERO_VIDEO = 'https://videos.pexels.com/video-files/1409899/1409899-hd_1280_720_25fps.mp4'
+const HERO_POSTER =
+  'https://images.pexels.com/videos/1409899/free-video-1409899.jpg?auto=compress&cs=tinysrgb&w=1600'
+
+// comparaison tolérante : ignore accents, casse, tirets/espaces (« aix en provence » ~ « Aix-en-Provence »)
+const normalize = (s: string) =>
+  stripAccents(s)
+    .toLowerCase()
+    .replace(/[\s-]+/g, ' ')
+    .trim()
 
 function geoUrl(g: GeoCity): string {
   const params = new URLSearchParams({
@@ -25,8 +38,9 @@ function SearchBar() {
   const navigate = useNavigate()
 
   const q = query.trim().toLowerCase()
-  const curated = q
-    ? CITIES.filter((c) => c.name.toLowerCase().includes(q) || c.country.toLowerCase().includes(q))
+  const nq = normalize(query)
+  const curated = nq
+    ? CITIES.filter((c) => normalize(c.name).includes(nq) || normalize(c.country).includes(nq))
     : []
 
   // recherche mondiale (géocodage Open-Meteo) avec anti-rebond
@@ -52,8 +66,8 @@ function SearchBar() {
   }, [q])
 
   // évite les doublons avec nos destinations éditoriales
-  const curatedNames = new Set(CITIES.map((c) => c.name.toLowerCase()))
-  const world = geoResults.filter((g) => !curatedNames.has(g.name.toLowerCase())).slice(0, 6)
+  const curatedNames = new Set(CITIES.map((c) => normalize(c.name)))
+  const world = geoResults.filter((g) => !curatedNames.has(normalize(g.name))).slice(0, 6)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -133,8 +147,25 @@ function SearchBar() {
 export function HomePage() {
   return (
     <div className="view">
-      <section className="hero">
-        <div className="hero-glow" aria-hidden="true" />
+      <section className="hero hero--video">
+        <div
+          className="hero-media"
+          aria-hidden="true"
+          style={{ backgroundImage: `url(${HERO_POSTER})` }}
+        >
+          <video
+            className="hero-video"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster={HERO_POSTER}
+          >
+            <source src={HERO_VIDEO} type="video/mp4" />
+          </video>
+          <div className="hero-scrim" />
+        </div>
         <div className="hero-inner">
           <span className="kicker">Le monde, à portée de curiosité</span>
           <h1 className="hero-title">

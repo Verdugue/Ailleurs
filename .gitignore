@@ -1,0 +1,23 @@
+# Dépendances
+node_modules/
+
+# Build de production
+dist/
+
+# Secrets — clés API (Ticketmaster, OpenAgenda)
+.env
+.env.local
+.env.*.local
+
+# Captures / debug
+*.har
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / éditeurs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
