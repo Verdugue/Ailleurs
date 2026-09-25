@@ -10,6 +10,7 @@ import {
   type NearbyLodging,
   type PriceTier,
 } from '../services/overpass'
+import { fetchLodgingPhoto, hasGooglePlacesKey } from '../services/places'
 import { useAsync } from '../hooks/useAsync'
 import { CoverImage } from '../components/CoverImage'
 import {
@@ -34,10 +35,18 @@ function LodgingCard({
   index: number
   price: number
 }) {
+  // vraie photo de l'établissement (Google Places) quand elle existe, sinon illustration
+  const photo = useAsync(
+    () => fetchLodgingPhoto(l.name, { lat: l.lat, lon: l.lon }),
+    [l.osmType, l.osmId],
+  )
+  const real = photo.status === 'ready' ? photo.data : null
+  const src = photo.status === 'loading' ? undefined : real ?? HOTEL_PHOTOS[index % HOTEL_PHOTOS.length]
+
   return (
     <article className="lodging-card">
       <div className="lodging-img" style={{ background: LODGING_GRADIENT }}>
-        <CoverImage src={HOTEL_PHOTOS[index % HOTEL_PHOTOS.length]} />
+        <CoverImage key={src} src={src} />
       </div>
       <div className="lodging-body">
         <span
@@ -99,8 +108,11 @@ function NearbyLodgingGrid({ items }: { items: NearbyLodging[] }) {
         </div>
       ))}
       <p className="lodging-note">
-        Hébergements réels · données © contributeurs OpenStreetMap · photos d'illustration ·
-        prix indicatifs estimés (non contractuels)
+        Hébergements réels · données © contributeurs OpenStreetMap ·{' '}
+        {hasGooglePlacesKey
+          ? 'photos des établissements via Google Maps (illustration à défaut)'
+          : "photos d'illustration"}{' '}
+        · prix indicatifs estimés (non contractuels)
       </p>
     </>
   )

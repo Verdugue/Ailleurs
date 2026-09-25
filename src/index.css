@@ -34,6 +34,8 @@ html,
 body {
   margin: 0;
   padding: 0;
+  /* filet de sécurité : aucun débordement horizontal sur mobile (clip ne casse pas les sticky) */
+  overflow-x: clip;
 }
 
 body {
@@ -1747,12 +1749,40 @@ a.btn-primary:hover {
 }
 
 @media (max-width: 640px) {
+  /* Header en deux lignes : marque au-dessus, navigation centrée en dessous */
   .site-header {
-    padding: 14px 20px;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 16px 8px;
+  }
+
+  .brand {
+    gap: 9px;
+  }
+
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+  }
+
+  .brand-name {
+    font-size: 22px;
   }
 
   .site-nav {
-    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 14px;
+  }
+
+  .nav-link {
+    padding: 4px 6px;
+  }
+
+  /* la barre de filtres vient se caler sous le header deux lignes */
+  .filter-bar {
+    top: 78px;
   }
 
   .hero {
@@ -1817,5 +1847,114 @@ a.btn-primary:hover {
 
   .search-box button {
     padding: 12px 18px;
+  }
+
+  .hero-lead {
+    font-size: 16px;
+  }
+
+  /* les têtes de section passent à la ligne au lieu de déborder */
+  .section-head {
+    flex-wrap: wrap;
+    gap: 4px 16px;
+  }
+
+  .section-note {
+    white-space: normal;
+  }
+
+  .destinations h2 {
+    font-size: 28px;
+  }
+
+  .region-title {
+    font-size: 21px;
+  }
+
+  .city-hero {
+    height: 380px;
+  }
+
+  .city-hero-content {
+    bottom: 28px;
+  }
+
+  .city-intro {
+    font-size: 16px;
+  }
+
+  .city-section h2 {
+    font-size: 27px;
+  }
+
+  .event-hero {
+    height: 430px;
+  }
+
+  .event-hero-content {
+    bottom: 30px;
+  }
+
+  .event-facts {
+    gap: 10px 18px;
+  }
+
+  .event-body {
+    padding-top: 40px;
+    gap: 36px;
+  }
+
+  .event-info h3 {
+    font-size: 22px;
+  }
+
+  .gallery {
+    height: 220px;
+  }
+
+  .booking-card {
+    padding: 22px 20px;
+  }
+
+  .lodging-inner h2,
+  .reviews-head h2 {
+    font-size: 27px;
+  }
+
+  .lodging-card {
+    grid-template-columns: 104px 1fr;
+    gap: 14px;
+  }
+
+  .lodging-body {
+    padding: 14px 16px 14px 0;
+  }
+
+  .notice-card {
+    padding: 20px;
+  }
+
+  .review-form {
+    padding: 16px;
+  }
+
+  .site-footer {
+    padding: 36px 20px;
+  }
+}
+
+/* Très petits écrans : la nav doit rester sur une seule ligne */
+@media (max-width: 360px) {
+  .site-nav {
+    gap: 4px 8px;
+    font-size: 13px;
+  }
+
+  .nav-link {
+    padding: 3px 4px;
+  }
+
+  .filter-bar {
+    top: 73px;
   }
 }

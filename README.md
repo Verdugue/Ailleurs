@@ -55,6 +55,10 @@ src/
 - **Overpass (OpenStreetMap)** (sans clé) — vrais hôtels, maisons d'hôtes, locations et auberges
   dans un rayon de 1,5 km autour du lieu réel de chaque événement, avec bascule automatique
   entre plusieurs serveurs publics. Données © contributeurs OpenStreetMap.
+- **Google Places (New)** (clé facultative, voir `.env.example`) — vraies photos des
+  hébergements de la section « Où dormir à proximité » (recherche du lieu par nom autour de
+  ses coordonnées OSM, mise en cache 7 jours pour économiser le quota). Sans clé, ou si un
+  établissement n'a pas de photo, repli sur les photos d'illustration.
 - **Open-Meteo** (sans clé) — météo actuelle affichée sur chaque page ville, et **géocodage**
   de la recherche mondiale (toutes les villes de la planète).
 - **Wikipédia** (sans clé) — sur les pages « découverte » : résumé de la ville, photo principale
